@@ -44,7 +44,7 @@ digitsInt base (I# m) = f m
   where
     f :: Int# -> [Int]
     f 0# = []
-    f n = let (# q, r #) = n `quotRemInt#` base in (I# r) : f q
+    f n = let (# q, r #) = n `quotRemInt#` base in I# r : f q
 
 
 digitsInteger' :: Int -> Int -> Integer -> Integer -> [Int]
@@ -63,7 +63,7 @@ selectPower base = if poweredBase > 0
     else (power - 1, base ^ (power - 1))
   where
     power :: Int
-    power = floor $ logBase (fi $ ti base) (fi $ ti $ (maxBound :: Int))
+    power = floor $ logBase (fi $ ti base) (fi $ ti (maxBound :: Int))
     poweredBase :: Int
     poweredBase = base ^ power
 
