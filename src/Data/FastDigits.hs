@@ -48,19 +48,13 @@ digitsInt base (I# m) = f m
 
 
 digitsInteger' :: Int -> Int -> Integer -> Integer -> [Int]
-digitsInteger' power (I# base) poweredBase m = fm
+digitsInteger' power (I# base) poweredBase = f
   where
-    (# fm, _ #) = f m
-
-    f :: Integer -> (# [Int], Int #)
-    f n = case n `quotRemInteger` poweredBase of
-      (# 0, _ #) -> (# ds, length ds #)
-                    where
-                      ds = digitsInt base (fi n)
-      (# q, r #) -> (# fr ++ replicate (power - lr) 0 ++ fq, lq #)
-                    where
-                      (# fq, lq #) = f q
-                      (# fr, lr #) = f r
+    f :: Integer -> [Int]
+    f n = fr ++ (if q == 0 then [] else replicate (power - length fr) 0 ++ f q)
+      where
+        (# q, r #) = n `quotRemInteger` poweredBase
+        fr = digitsInt base (fi r)
 
 
 selectPower :: Int -> (Int, Int)
