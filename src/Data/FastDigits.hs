@@ -12,8 +12,11 @@ Usually this library is twice as fast as "Data.Digits".
 For small bases and long numbers it may be up to 30 times faster.
 -}
 
+{-# LANGUAGE MagicHash     #-}
+{-# LANGUAGE UnboxedTuples #-}
+
 {-# OPTIONS_GHC -fno-warn-type-defaults	 #-}
-{-# OPTIONS_GHC -O2	 #-}
+{-# OPTIONS_GHC -O2	                     #-}
 
 module Data.FastDigits
 	( digits
@@ -21,6 +24,8 @@ module Data.FastDigits
 	) where
 
 import Control.Arrow
+import GHC.Exts
+import GHC.Integer
 
 ti :: Integral a => a -> Integer
 ti = toInteger
@@ -28,18 +33,18 @@ ti = toInteger
 fi :: Num a => Integer -> a
 fi = fromInteger
 
-
 digitsInteger :: Integer -> Integer -> [Int]
 digitsInteger base = f
 	where
 		f 0 = []
-		f n = let (q, r) = n `quotRem` base in fi r : f q
+		f n = let (# q, r #) = n `quotRemInteger` base in fi r : f q
 
 digitsInt :: Int -> Int -> [Int]
-digitsInt base = f
+digitsInt (I# base) (I# m) = f m
 	where
-		f 0 = []
-		f n = let (q, r) = n `quotRem` base in r : f q
+		f :: Int# -> [Int]
+		f 0# = []
+		f n = let (# q, r #) = n `quotRemInt#` base in (I# r) : f q
 
 
 digitsInteger' :: Int -> Int -> Integer -> Integer -> [Int]
