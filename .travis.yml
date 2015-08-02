@@ -1,8 +1,7 @@
 language: haskell
 ghc:
-- 7.8
-- 7.6
+- '7.8'
 install:
-  - cabal install --only-dependencies --enable-tests --constraint mtl==2.1.2
+  - cabal install --only-dependencies --enable-tests --enable-benchmarks --constraint mtl==2.1.2
 script:
-  - cabal configure --enable-tests && cabal build && dist/build/tests/tests
+  - cabal configure --enable-tests --enable-benchmarks && cabal build && dist/build/tests/tests && dist/build/bench/bench
