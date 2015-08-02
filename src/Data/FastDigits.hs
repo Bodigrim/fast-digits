@@ -23,7 +23,6 @@ module Data.FastDigits
   , undigits
   ) where
 
-import Control.Arrow
 import GHC.Exts
 import GHC.Integer
 
@@ -33,14 +32,15 @@ ti = toInteger
 fi :: Num a => Integer -> a
 fi = fromInteger
 
+
 digitsInteger :: Integer -> Integer -> [Int]
 digitsInteger base = f
   where
     f 0 = []
     f n = let (# q, r #) = n `quotRemInteger` base in fi r : f q
 
-digitsInt :: Int -> Int -> [Int]
-digitsInt (I# base) (I# m) = f m
+digitsInt :: Int# -> Int -> [Int]
+digitsInt base (I# m) = f m
   where
     f :: Int# -> [Int]
     f 0# = []
@@ -48,15 +48,20 @@ digitsInt (I# base) (I# m) = f m
 
 
 digitsInteger' :: Int -> Int -> Integer -> Integer -> [Int]
-digitsInteger' power base poweredBase = fst . f
+digitsInteger' power (I# base) poweredBase m = fm
   where
-    f :: Integer -> ([Int], Int)
-    f n = case n `quotRem` poweredBase of
-      (0, _) -> (id &&& length) (digitsInt base $ fi n)
-      (q, r) -> (fr ++ replicate (power - lr) 0 ++ fq, lq)
-                where
-                  (fq, lq) = f q
-                  (fr, lr) = f r
+    (# fm, _ #) = f m
+
+    f :: Integer -> (# [Int], Int #)
+    f n = case n `quotRemInteger` poweredBase of
+      (# 0, _ #) -> (# ds, length ds #)
+                    where
+                      ds = digitsInt base (fi n)
+      (# q, r #) -> (# fr ++ replicate (power - lr) 0 ++ fq, lq #)
+                    where
+                      (# fq, lq #) = f q
+                      (# fr, lr #) = f r
+
 
 selectPower :: Int -> (Int, Int)
 selectPower base = if poweredBase > 0
@@ -78,10 +83,10 @@ digits
   :: Int     -- ^ The base to use
   -> Integer -- ^ The integer to convert
   -> [Int]
-digits base n
+digits base@(I# base') n
   | base < 2  = error "Base must be > 1"
   | n < 0     = error "Number must be non-negative"
-  | n < ti (maxBound :: Int) = digitsInt base (fi n)
+  | n < ti (maxBound :: Int) = digitsInt base' (fi n)
   | otherwise = if power == 1
                   then digitsInteger (ti base) n
                   else digitsInteger' power base (ti poweredBase) n
