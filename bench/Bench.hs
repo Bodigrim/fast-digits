@@ -17,7 +17,7 @@ intNs from len = [from, step .. maxBound]
     step = maxBound `div` len
 
 integerN :: Int -> Int -> Integer
-integerN from len = undigits maxBound (intNs from len)
+integerN from len = undigits (maxBound :: Int) (intNs from len)
 
 integerNs :: Int -> Int -> [Integer]
 integerNs llen len = map (\i -> integerN i len) [1..llen]

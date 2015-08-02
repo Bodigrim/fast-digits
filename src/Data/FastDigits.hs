@@ -85,10 +85,12 @@ digits base n
 
 -- | Return an integer, built from given digits in reverse order.
 --   Condition 0 <= digit < base is not checked.
-undigits
-	:: Int      -- ^ The base to use
-	-> [Int]    -- ^ The list of digits to convert
-	-> Integer
+undigits :: (Integral a, Integral b)
+         => a       -- ^ The base to use
+         -> [b]     -- ^ The list of digits to convert
+         -> Integer
 undigits base' = foldr (\d acc -> acc * base + ti d) 0
 	where
 		base = ti base'
+{-# SPECIALIZE undigits :: Int -> [Int] -> Integer #-}
+{-# SPECIALIZE undigits :: Integer -> [Integer] -> Integer #-}
