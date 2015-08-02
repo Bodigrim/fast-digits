@@ -1,3 +1,17 @@
+{-|
+Module      : Data.FastDigits
+Description : The fast library for integer-to-digits conversion.
+Copyright   : (c) Andrew Lelechenko, 2015
+License     : GPL-3
+Maintainer  : andrew.lelechenko@gmail.com
+Stability   : experimental
+Portability : POSIX
+
+Convert an integer to digits and back.
+Usually this library is twice as fast as "Data.Digits".
+For small bases and long numbers it may be up to 30 times faster.
+-}
+
 {-# OPTIONS_GHC -fno-warn-type-defaults	 #-}
 {-# OPTIONS_GHC -O2	 #-}
 
@@ -49,7 +63,16 @@ selectPower base = if poweredBase > 0
 		poweredBase :: Int
 		poweredBase = base ^ power
 
-digits :: Int -> Integer -> [Int]
+-- | Return digits of a non-negative integer in reverse order. E. g.,
+--
+--   > digits 10 123 = [3, 2, 1]
+--   > digits 10 0   = []
+--
+-- Throw an error if number is negative or base is below 2.
+digits
+	:: Int     -- ^ The base to use
+	-> Integer -- ^ The integer to convert
+	-> [Int]
 digits base n
 	| base < 2  = error "Base must be > 1"
 	| n < 0     = error "Number must be non-negative"
@@ -60,8 +83,12 @@ digits base n
 	where
 		(power, poweredBase) = selectPower base
 
-
-undigits :: Int -> [Int] -> Integer
+-- | Return an integer, built from given digits in reverse order.
+--   Condition 0 <= digit < base is not checked.
+undigits
+	:: Int      -- ^ The base to use
+	-> [Int]    -- ^ The list of digits to convert
+	-> Integer
 undigits base' = foldr (\d acc -> acc * base + ti d) 0
 	where
 		base = ti base'

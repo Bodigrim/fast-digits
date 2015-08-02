@@ -1,6 +1,9 @@
 name:                fast-digits
 version:             0.1.0.0
-synopsis:            A fast library for number-to-digits conversion.
+synopsis:            The fast library for integer-to-digits conversion.
+description:         Convert an integer to digits and back.
+                     Usually this library is twice as fast as "Data.Digits".
+                     For small bases and long numbers it may be up to 30 times faster.
 license:             GPL-3
 license-file:        LICENSE
 author:              Andrew Lelechenko
