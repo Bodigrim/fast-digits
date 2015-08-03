@@ -17,6 +17,7 @@ For small bases and long numbers it may be up to 30 times faster.
 
 {-# OPTIONS_GHC -fno-warn-type-defaults  #-}
 {-# OPTIONS_GHC -O2                      #-}
+{-# OPTIONS_GHC -optc-O3                 #-}
 
 module Data.FastDigits
   ( digits
