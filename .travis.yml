@@ -4,4 +4,4 @@ ghc:
 install:
   - cabal install --only-dependencies --enable-tests --enable-benchmarks --constraint mtl==2.1.2
 script:
-  - cabal configure --enable-tests --enable-benchmarks && cabal build && dist/build/tests/tests && dist/build/bench/bench
+  - cabal configure --enable-tests --enable-benchmarks && cabal build && dist/build/tests/tests --quickcheck-tests 10000 --smallcheck-depth 100 && dist/build/bench/bench --time-limit 60
