@@ -47,15 +47,25 @@ digitsInt base (I# m) = f m
     f 0# = []
     f n = let (# q, r #) = n `quotRemInt#` base in I# r : f q
 
+digitsIntL :: Int# -> Int -> (# [Int], Int #)
+digitsIntL base (I# m) = f m
+  where
+    f :: Int# -> (# [Int], Int #)
+    f 0# = (# [], 0 #)
+    f n = (# I# r : fq, 1 + lq #)
+      where
+        (# q, r #) = n `quotRemInt#` base
+        (# fq, lq #) = f q
 
 digitsInteger' :: Int -> Int -> Integer -> Integer -> [Int]
 digitsInteger' power (I# base) poweredBase = f
   where
     f :: Integer -> [Int]
-    f n = fr ++ (if q == 0 then [] else replicate (power - length fr) 0 ++ f q)
-      where
-        (# q, r #) = n `quotRemInteger` poweredBase
-        fr = digitsInt base (fi r)
+    f n = case  n `quotRemInteger` poweredBase of
+      (# 0, _ #) -> digitsInt base (fi n)
+      (# q, r #) -> fr ++ replicate (power - lr) 0 ++ f q
+                    where
+                      (# fr, lr #) = digitsIntL base (fi r)
 
 
 selectPower :: Int -> (Int, Int)
