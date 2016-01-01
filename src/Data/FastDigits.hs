@@ -12,6 +12,7 @@ Usually this library is twice as fast as "Data.Digits".
 For small bases and long numbers it may be up to 30 times faster.
 -}
 
+{-# LANGUAGE BangPatterns  #-}
 {-# LANGUAGE MagicHash     #-}
 {-# LANGUAGE UnboxedTuples #-}
 
@@ -40,6 +41,8 @@ digitsInteger base = f
     f 0 = []
     f n = let (# q, r #) = n `quotRemInteger` base in fi r : f q
 
+-- Use Word instead of Int!
+
 digitsInt :: Int# -> Int -> [Int]
 digitsInt base (I# m) = f m
   where
@@ -47,36 +50,40 @@ digitsInt base (I# m) = f m
     f 0# = []
     f n = let (# q, r #) = n `quotRemInt#` base in I# r : f q
 
-digitsIntL :: Int# -> Int -> (# [Int], Int #)
-digitsIntL base (I# m) = f m
+digitsIntL :: Int# -> Int# -> Int -> (# [Int], Int# #)
+digitsIntL power base (I# m) = f m
   where
-    f :: Int# -> (# [Int], Int #)
-    f 0# = (# [], 0 #)
-    f n = (# I# r : fq, 1 + lq #)
+    f :: Int# -> (# [Int], Int# #)
+    f 0# = (# [], power #)
+    f n = (# I# r : fq, lq -# 1# #)
       where
         (# q, r #) = n `quotRemInt#` base
         (# fq, lq #) = f q
 
-digitsInteger' :: Int -> Int -> Integer -> Integer -> [Int]
-digitsInteger' power (I# base) poweredBase = f
+digitsInteger' :: Int# -> Int# -> Integer -> Integer -> [Int]
+digitsInteger' power base poweredBase = f
   where
     f :: Integer -> [Int]
     f n = case  n `quotRemInteger` poweredBase of
       (# 0, _ #) -> digitsInt base (fi n)
-      (# q, r #) -> fr ++ replicate (power - lr) 0 ++ f q
+      (# q, r #) -> fr ++ replicate (I# lr) 0 ++ f q
                     where
-                      (# fr, lr #) = digitsIntL base (fi r)
+                      (# fr, lr #) = digitsIntL power base (fi r)
 
-
-selectPower :: Int -> (Int, Int)
-selectPower base = if poweredBase > 0
-    then (power, poweredBase)
-    else (power - 1, base ^ (power - 1))
+-- | Take an integer base and return (pow, base^pow),
+--   where base^pow <= maxBound and pow is as large as possible.
+selectPower :: Int# -> (# Int#, Int# #)
+selectPower base = if I# poweredBase' > 0
+    then (# power', poweredBase' #)
+    else (# power,  poweredBase  #)
   where
-    power :: Int
-    power = floor $ logBase (fi $ ti base) (fi $ ti (maxBound :: Int))
-    poweredBase :: Int
-    poweredBase = base ^ power
+    !(I# maxB) = maxBound
+
+    power = double2Int# (logDouble# (int2Double# base) /## logDouble# (int2Double# maxB))
+    power' = power +# 1#
+
+    !(I# poweredBase) = (I# base) ^ (I# power)
+    !(I# poweredBase') = (I# base) ^ (I# power')
 
 -- | Return digits of a non-negative integer in reverse order. E. g.,
 --
@@ -92,11 +99,11 @@ digits base@(I# base') n
   | base < 2  = error "Base must be > 1"
   | n < 0     = error "Number must be non-negative"
   | n < ti (maxBound :: Int) = digitsInt base' (fi n)
-  | otherwise = if power == 1
+  | otherwise = if I# power == 1
                   then digitsInteger (ti base) n
-                  else digitsInteger' power base (ti poweredBase) n
+                  else digitsInteger' power base' (ti $ I# poweredBase) n
   where
-    (power, poweredBase) = selectPower base
+    (# power, poweredBase #) = selectPower base'
 
 -- | Return an integer, built from given digits in reverse order.
 --   Condition 0 <= digit < base is not checked.
