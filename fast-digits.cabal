@@ -19,8 +19,8 @@ source-repository head
 
 library
   exposed-modules:     Data.FastDigits
-  build-depends:         base < 5
-                       , integer-gmp
+  build-depends:         base >=4.8 && < 5
+                       , integer-gmp >=1.0
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall
