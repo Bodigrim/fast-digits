@@ -5,7 +5,6 @@ Copyright   : (c) Andrew Lelechenko, 2015
 License     : GPL-3
 Maintainer  : andrew.lelechenko@gmail.com
 Stability   : experimental
-Portability : POSIX
 
 Convert an integer to digits and back.
 Usually this library is twice as fast as "Data.Digits".
@@ -79,17 +78,12 @@ digitsNatural' base power poweredBase = f
       if q == zeroBigNat
         then digitsWord base r
         else let (# fr, lr #) = digitsWordL base power r in
-          fr ++ replicate (I# (word2Int# lr)) 0 ++ f q
+          fr ++ replicate (I# (unsafeCoerce# lr)) 0 ++ f q
 
--- | Return digits of a non-negative integer in reverse order. E. g.,
---
---   > digits 10 123 = [3, 2, 1]
---   > digits 10 0   = []
---
--- Throw an error if number is negative or base is below 2.
+-- | Return digits of a non-negative number in reverse order.
 digitsUnsigned
-  :: Word     -- ^ The base to use
-  -> Natural -- ^ The integer to convert
+  :: Word    -- ^ Precondition that base is ≥2 is not checked
+  -> Natural
   -> [Word]
 digitsUnsigned (W# base) (NatS# n) = digitsWord base n
 digitsUnsigned (W# base) (NatJ# n) = case power of
@@ -98,10 +92,15 @@ digitsUnsigned (W# base) (NatJ# n) = case power of
   where
     (# power, poweredBase #) = selectPower base
 
+-- | Return digits of a non-negative number in reverse order.
+--   Throw an error if number is negative or base is below 2.
+--
+--   > digits 10 123 = [3, 2, 1]
+--   > digits 10 0   = []
 digits
   :: Int     -- ^ The base to use
-  -> Integer -- ^ The integer to convert
-  -> [Int]
+  -> Integer -- ^ The number to convert
+  -> [Int]   -- ^ Digits in reverse order
 digits base n
   | base < 2  = error "Base must be > 1"
   | n < 0     = error "Number must be non-negative"
@@ -109,7 +108,7 @@ digits base n
               $ digitsUnsigned (unsafeCoerce base) (unsafeCoerce n)
 
 -- | Return an integer, built from given digits in reverse order.
---   Condition 0 <= digit < base is not checked.
+--   Condition 0 ≤ digit < base is not checked.
 undigits :: (Integral a, Integral b)
          => a       -- ^ The base to use
          -> [b]     -- ^ The list of digits to convert
