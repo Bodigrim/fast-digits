@@ -104,20 +104,20 @@ sProperty7 a b = a < 0 || b < 0 ||
 
 testSuite :: TestTree
 testSuite = testGroup "digits"
-  [ QC.testProperty "undigits base . digits base == id" qProperty1
-  , SC.testProperty "undigits base . digits base == id" sProperty1
-  , QC.testProperty "digits == digitsD" qProperty2
-  , SC.testProperty "digits == digitsD" sProperty2
-  , QC.testProperty "digits 10 == digits10" qProperty3
-  , SC.testProperty "digits 10 == digits10" sProperty3
-  , QC.testProperty "All digits are between 0 and base - 1" qProperty4
-  , SC.testProperty "All digits are between 0 and base - 1" sProperty4
-  , QC.testProperty "Last digit is not 0" qProperty5
-  , SC.testProperty "Last digit is not 0" sProperty5
-  , QC.testProperty "digits 2 == digitsD 2" qProperty6
-  , SC.testProperty "digits 2 == digitsD 2" sProperty6
-  , QC.testProperty "digits 2 == digitsD 2 on integers of special form" qProperty7
-  , SC.testProperty "digits 2 == digitsD 2 on integers of special form" sProperty7
+  [ SC.testProperty "S undigits base . digits base == id" sProperty1
+  , QC.testProperty "Q undigits base . digits base == id" qProperty1
+  , SC.testProperty "S digits == digitsD" sProperty2
+  , QC.testProperty "Q digits == digitsD" qProperty2
+  , SC.testProperty "S digits 10 == digits10" sProperty3
+  , QC.testProperty "Q digits 10 == digits10" qProperty3
+  , SC.testProperty "S All digits are between 0 and base - 1" sProperty4
+  , QC.testProperty "Q All digits are between 0 and base - 1" qProperty4
+  , SC.testProperty "S Last digit is not 0" sProperty5
+  , QC.testProperty "Q Last digit is not 0" qProperty5
+  , SC.testProperty "S digits 2 == digitsD 2" sProperty6
+  , QC.testProperty "Q digits 2 == digitsD 2" qProperty6
+  , SC.testProperty "S digits 2 == digitsD 2 on integers of special form" sProperty7
+  , QC.testProperty "Q digits 2 == digitsD 2 on integers of special form" qProperty7
   ]
 
 main :: IO ()
