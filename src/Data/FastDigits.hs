@@ -30,12 +30,10 @@ import GHC.Exts
 import GHC.Integer.GMP.Internals
 import GHC.Integer.Logarithms
 import GHC.Natural
+import Unsafe.Coerce
 
 ti :: Integral a => a -> Integer
 ti = toInteger
-
-fi :: Num a => Integer -> a
-fi = fromInteger
 
 digitsNatural :: GmpLimb# -> BigNat -> [Word]
 digitsNatural base = f
@@ -108,7 +106,8 @@ digits
 digits base n
   | base < 2  = error "Base must be > 1"
   | n < 0     = error "Number must be non-negative"
-  | otherwise = map (\(W# x) -> I# (word2Int# x)) $ digitsUnsigned (fi (ti base)) (fi n)
+  | otherwise = unsafeCoerce
+              $ digitsUnsigned (unsafeCoerce base) (unsafeCoerce n)
 
 -- | Return an integer, built from given digits in reverse order.
 --   Condition 0 <= digit < base is not checked.
