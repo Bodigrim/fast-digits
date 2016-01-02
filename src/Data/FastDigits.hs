@@ -32,9 +32,6 @@ import GHC.Integer.Logarithms
 import GHC.Natural
 import Unsafe.Coerce
 
-ti :: Integral a => a -> Integer
-ti = toInteger
-
 digitsNatural :: GmpLimb# -> BigNat -> [Word]
 digitsNatural base = f
   where
@@ -115,9 +112,9 @@ undigits :: (Integral a, Integral b)
          => a       -- ^ The base to use
          -> [b]     -- ^ The list of digits to convert
          -> Integer
-undigits base' = foldr (\d acc -> acc * base + ti d) 0
+undigits base' = foldr (\d acc -> acc * base + toInteger d) 0
   where
-    base = ti base'
-{-# SPECIALIZE undigits :: Word -> [Word] -> Integer #-}
-{-# SPECIALIZE undigits :: Int -> [Int] -> Integer #-}
+    base = toInteger base'
+{-# SPECIALIZE undigits :: Word    -> [Word]    -> Integer #-}
+{-# SPECIALIZE undigits :: Int     -> [Int]     -> Integer #-}
 {-# SPECIALIZE undigits :: Integer -> [Integer] -> Integer #-}
