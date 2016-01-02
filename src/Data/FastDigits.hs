@@ -12,7 +12,6 @@ Usually this library is twice as fast as "Data.Digits".
 For small bases and long numbers it may be up to 40 times faster.
 -}
 
-{-# LANGUAGE BangPatterns  #-}
 {-# LANGUAGE MagicHash     #-}
 {-# LANGUAGE UnboxedTuples #-}
 
@@ -21,16 +20,16 @@ For small bases and long numbers it may be up to 40 times faster.
 {-# OPTIONS_GHC -optc-O3                 #-}
 
 module Data.FastDigits
-  ( digitsUnsigned
-  , digits
+  ( digits
   , undigits
+  , digitsUnsigned
   ) where
 
 import GHC.Exts
 import GHC.Integer.GMP.Internals
-import GHC.Integer.Logarithms
 import GHC.Natural
 import Unsafe.Coerce
+import Data.FastDigits.Internal
 
 digitsNatural :: GmpLimb# -> BigNat -> [Word]
 digitsNatural base = f
@@ -81,15 +80,6 @@ digitsNatural' base power poweredBase = f
         then digitsWord base r
         else let (# fr, lr #) = digitsWordL base power r in
           fr ++ replicate (I# (word2Int# lr)) 0 ++ f q
-
--- | Take an integer base and return (pow, base^pow),
---   where base^pow <= maxBound and pow is as large as possible.
-selectPower :: Word# -> (# Word#, Word# #)
-selectPower base = (# power, poweredBase #)
-  where
-    !(W# maxB) = maxBound
-    power = int2Word# (integerLogBase# (wordToInteger base) (wordToInteger maxB))
-    !(W# poweredBase) = (W# base) ^ (W# power)
 
 -- | Return digits of a non-negative integer in reverse order. E. g.,
 --

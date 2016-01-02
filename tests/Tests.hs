@@ -13,6 +13,7 @@ import Test.SmallCheck.Series
 import qualified Data.Digits as D
 
 import Data.FastDigits
+import Data.FastDigits.Internal
 
 instance (Num a, Ord a, Arbitrary a) => Arbitrary (Positive a) where
   arbitrary =
@@ -102,6 +103,20 @@ sProperty7 a b = a < 0 || b < 0 ||
   where
     n = toInteger a * toInteger (maxBound :: Int) + toInteger b
 
+qProperty8 :: Positive Int -> QC.Property
+qProperty8 (Positive base') = base > 1 QC.==>
+  base ^ power == poweredBase && poweredBase > maxBound `div` base
+  where
+    base = fromIntegral $ toInteger base'
+    (power, poweredBase) = selectPower' base
+
+sProperty8 :: Positive Int -> Bool
+sProperty8 (Positive base') = base <= 1 ||
+  base ^ power == poweredBase && poweredBase > maxBound `div` base
+  where
+    base = fromIntegral $ toInteger base'
+    (power, poweredBase) = selectPower' base
+
 testSuite :: TestTree
 testSuite = testGroup "digits"
   [ SC.testProperty "S undigits base . digits base == id" sProperty1
@@ -118,6 +133,8 @@ testSuite = testGroup "digits"
   , QC.testProperty "Q digits 2 == digitsD 2" qProperty6
   , SC.testProperty "S digits 2 == digitsD 2 on integers of special form" sProperty7
   , QC.testProperty "Q digits 2 == digitsD 2 on integers of special form" qProperty7
+  , SC.testProperty "S selectPower is correct" sProperty8
+  , QC.testProperty "Q selectPower is correct" qProperty8
   ]
 
 main :: IO ()
