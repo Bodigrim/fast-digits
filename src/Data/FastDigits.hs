@@ -9,7 +9,7 @@ Portability : POSIX
 
 Convert an integer to digits and back.
 Usually this library is twice as fast as "Data.Digits".
-For small bases and long numbers it may be up to 30 times faster.
+For small bases and long numbers it may be up to 40 times faster.
 -}
 
 {-# LANGUAGE BangPatterns  #-}
@@ -40,6 +40,11 @@ digitsNatural base = f
       else let (# q, r #) = n `quotRemBigNatWord` base in W# r : f q
 
 digitsWord :: Word# -> Word# -> [Word]
+digitsWord 2## = g
+  where
+    g :: Word# -> [Word]
+    g 0## = []
+    g n = W# (n `and#` 1##) : g (n `uncheckedShiftRL#` 1#)
 digitsWord base = f
   where
     f :: Word# -> [Word]
@@ -49,6 +54,13 @@ digitsWord base = f
 -- | For a given base and expected length of list of digits
 --   return the list of digits and padding till expected length.
 digitsWordL :: Word# -> Word# -> Word# -> (# [Word], Word# #)
+digitsWordL 2## power = g
+  where
+    g :: Word# -> (# [Word], Word# #)
+    g 0## = (# [], power #)
+    g n = (# W# (n `and#` 1##) : fq, lq `minusWord#` 1## #)
+      where
+        (# fq, lq #) = g (n `uncheckedShiftRL#` 1#)
 digitsWordL base power = f
   where
     f :: Word# -> (# [Word], Word# #)
