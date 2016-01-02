@@ -21,12 +21,15 @@ For small bases and long numbers it may be up to 30 times faster.
 {-# OPTIONS_GHC -optc-O3                 #-}
 
 module Data.FastDigits
-  ( digits
+  ( digitsUnsigned
+  , digits
   , undigits
   ) where
 
 import GHC.Exts
-import GHC.Integer
+import GHC.Integer.GMP.Internals
+import GHC.Integer.Logarithms
+import GHC.Natural
 
 ti :: Integral a => a -> Integer
 ti = toInteger
@@ -34,59 +37,52 @@ ti = toInteger
 fi :: Num a => Integer -> a
 fi = fromInteger
 
--- | First argument should be below maxBound :: Int.
-digitsInteger :: Integer -> Integer -> [Int]
-digitsInteger base = f
+digitsNatural :: GmpLimb# -> BigNat -> [Word]
+digitsNatural base = f
   where
-    f 0 = []
-    f n = let (# q, r #) = n `quotRemInteger` base in fi r : f q
+    f n = if n == zeroBigNat
+      then []
+      else let (# q, r #) = n `quotRemBigNatWord` base in W# r : f q
 
-digitsInt :: Int# -> Int -> [Int]
-digitsInt base (I# m) = f m
+digitsWord :: Word# -> Word# -> [Word]
+digitsWord base = f
   where
-    f :: Int# -> [Int]
-    f 0# = []
-    f n = let (# q, r #) = n `quotRemInt#` base in I# r : f q
+    f :: Word# -> [Word]
+    f 0## = []
+    f n = let (# q, r #) = n `quotRemWord#` base in W# r : f q
 
 -- | For a given base and expected length of list of digits
 --   return the list of digits and padding till expected length.
-digitsIntL :: Int# -> Int# -> Int -> (# [Int], Int# #)
-digitsIntL base power (I# m) = f m
+digitsWordL :: Word# -> Word# -> Word# -> (# [Word], Word# #)
+digitsWordL base power = f
   where
-    f :: Int# -> (# [Int], Int# #)
-    f 0# = (# [], power #)
-    f n = (# I# r : fq, lq -# 1# #)
+    f :: Word# -> (# [Word], Word# #)
+    f 0## = (# [], power #)
+    f n = (# W# r : fq, lq `minusWord#` 1## #)
       where
-        (# q, r #) = n `quotRemInt#` base
+        (# q, r #) = n `quotRemWord#` base
         (# fq, lq #) = f q
 
 -- | For a given base, power and precalculated base^power
 --   take an integer and return the list of its digits.
-digitsInteger' :: Int# -> Int# -> Integer -> Integer -> [Int]
-digitsInteger' base power poweredBase = f
+digitsNatural' :: Word# -> Word# -> Word# -> BigNat -> [Word]
+digitsNatural' base power poweredBase = f
   where
-    f :: Integer -> [Int]
-    f n = case  n `quotRemInteger` poweredBase of
-      (# 0, _ #) -> digitsInt base (fi n)
-      (# q, r #) -> fr ++ replicate (I# lr) 0 ++ f q
-                    where
-                      (# fr, lr #) = digitsIntL base power (fi r)
+    f :: BigNat -> [Word]
+    f n = let (# q, r #) = n `quotRemBigNatWord` poweredBase in
+      if q == zeroBigNat
+        then digitsWord base r
+        else let (# fr, lr #) = digitsWordL base power r in
+          fr ++ replicate (I# (word2Int# lr)) 0 ++ f q
 
 -- | Take an integer base and return (pow, base^pow),
 --   where base^pow <= maxBound and pow is as large as possible.
-selectPower :: Int# -> (# Int#, Int# #)
-selectPower base = -- if I# poweredBase' > 0
-    --then
-    (# power', poweredBase' #)
-    --else (# power,  poweredBase  #)
+selectPower :: Word# -> (# Word#, Word# #)
+selectPower base = (# power, poweredBase #)
   where
-    !(I# maxB) = maxBound
-
-    power = double2Int# (logDouble# (int2Double# base) /## logDouble# (int2Double# maxB))
-    power' = power +# 1#
-
-    -- !(I# poweredBase) = (I# base) ^ (I# power)
-    !(I# poweredBase') = (I# base) ^ (I# power')
+    !(W# maxB) = maxBound
+    power = int2Word# (integerLogBase# (wordToInteger base) (wordToInteger maxB))
+    !(W# poweredBase) = (W# base) ^ (W# power)
 
 -- | Return digits of a non-negative integer in reverse order. E. g.,
 --
@@ -94,19 +90,25 @@ selectPower base = -- if I# poweredBase' > 0
 --   > digits 10 0   = []
 --
 -- Throw an error if number is negative or base is below 2.
+digitsUnsigned
+  :: Word     -- ^ The base to use
+  -> Natural -- ^ The integer to convert
+  -> [Word]
+digitsUnsigned (W# base) (NatS# n) = digitsWord base n
+digitsUnsigned (W# base) (NatJ# n) = case power of
+  1## -> digitsNatural base n
+  _   -> digitsNatural' base power poweredBase n
+  where
+    (# power, poweredBase #) = selectPower base
+
 digits
   :: Int     -- ^ The base to use
   -> Integer -- ^ The integer to convert
   -> [Int]
-digits base@(I# base') n
+digits base n
   | base < 2  = error "Base must be > 1"
   | n < 0     = error "Number must be non-negative"
-  | n < ti (maxBound :: Int) = digitsInt base' (fi n)
-  | otherwise = if I# power == 1
-                  then digitsInteger (ti base) n
-                  else digitsInteger' base' power (ti $ I# poweredBase) n
-  where
-    (# power, poweredBase #) = selectPower base'
+  | otherwise = map (\(W# x) -> I# (word2Int# x)) $ digitsUnsigned (fi (ti base)) (fi n)
 
 -- | Return an integer, built from given digits in reverse order.
 --   Condition 0 <= digit < base is not checked.
