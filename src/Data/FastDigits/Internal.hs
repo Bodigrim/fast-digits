@@ -1,6 +1,6 @@
 {-|
 Module      : Data.FastDigits.Internal
-Copyright   : (c) Andrew Lelechenko, 2015
+Copyright   : (c) Andrew Lelechenko, 2015-2016
 License     : GPL-3
 Maintainer  : andrew.lelechenko@gmail.com
 Stability   : experimental
@@ -21,6 +21,8 @@ module Data.FastDigits.Internal
   ) where
 
 import GHC.Exts
+
+#include "MachDeps.h"
 
 -- | Take an integer base and return (pow, base^pow),
 --   where base^pow <= maxBound and pow is as large as possible.
