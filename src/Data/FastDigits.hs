@@ -33,21 +33,23 @@ import Data.FastDigits.Internal
 digitsNatural :: GmpLimb# -> BigNat -> [Word]
 digitsNatural base = f
   where
-    f n = if n == zeroBigNat
-      then []
-      else let (# q, r #) = n `quotRemBigNatWord` base in W# r : f q
+    f n
+      | isZeroBigNat n = []
+      | otherwise      = let (# q, r #) = n `quotRemBigNatWord` base in
+                         W# r : f q
 
 digitsWord :: Word# -> Word# -> [Word]
 digitsWord 2## = g
   where
     g :: Word# -> [Word]
     g 0## = []
-    g n = W# (n `and#` 1##) : g (n `uncheckedShiftRL#` 1#)
+    g n   = W# (n `and#` 1##) : g (n `uncheckedShiftRL#` 1#)
 digitsWord base = f
   where
     f :: Word# -> [Word]
     f 0## = []
-    f n = let (# q, r #) = n `quotRemWord#` base in W# r : f q
+    f n   = let (# q, r #) = n `quotRemWord#` base in
+            W# r : f q
 
 -- | For a given base and expected length of list of digits
 --   return the list of digits and padding till expected length.
@@ -56,16 +58,16 @@ digitsWordL 2## power = g
   where
     g :: Word# -> (# [Word], Word# #)
     g 0## = (# [], power #)
-    g n = (# W# (n `and#` 1##) : fq, lq `minusWord#` 1## #)
+    g n   = (# W# (n `and#` 1##) : fq, lq `minusWord#` 1## #)
       where
         (# fq, lq #) = g (n `uncheckedShiftRL#` 1#)
 digitsWordL base power = f
   where
     f :: Word# -> (# [Word], Word# #)
     f 0## = (# [], power #)
-    f n = (# W# r : fq, lq `minusWord#` 1## #)
+    f n   = (# W# r : fq, lq `minusWord#` 1## #)
       where
-        (# q, r #) = n `quotRemWord#` base
+        (#  q,  r #) = n `quotRemWord#` base
         (# fq, lq #) = f q
 
 -- | For a given base, power and precalculated base^power
@@ -75,7 +77,7 @@ digitsNatural' base power poweredBase = f
   where
     f :: BigNat -> [Word]
     f n = let (# q, r #) = n `quotRemBigNatWord` poweredBase in
-      if q == zeroBigNat
+      if isZeroBigNat q
         then digitsWord base r
         else let (# fr, lr #) = digitsWordL base power r in
           fr ++ replicate (I# (unsafeCoerce# lr)) 0 ++ f q
