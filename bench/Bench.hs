@@ -1,6 +1,6 @@
 module Main where
 
-import Criterion.Main
+import Gauge.Main
 
 import qualified Data.Digits as D
 
