@@ -1,16 +1,18 @@
 {-|
 Module      : Data.FastDigits
-Description : The fast library for integer-to-digits conversion.
-Copyright   : (c) Andrew Lelechenko, 2015-2016
+Description : Integer-to-digits conversion.
+Copyright   : (c) Andrew Lelechenko, 2015-2020
 License     : GPL-3
 Maintainer  : andrew.lelechenko@gmail.com
 Stability   : experimental
 
 Convert an integer to digits and back.
-Usually this library is twice as fast as "Data.Digits".
-For small bases and long numbers it may be up to 40 times faster.
+This library is both asymptotically (O(n^1.4) vs. O(n^2))
+and practically (2x-40x for typical inputs)
+faster than "Data.Digits".
 -}
 
+{-# LANGUAGE BangPatterns  #-}
 {-# LANGUAGE MagicHash     #-}
 {-# LANGUAGE UnboxedTuples #-}
 
@@ -82,15 +84,26 @@ digitsNatural' base power poweredBase = f
         else let (# fr, lr #) = digitsWordL base power r in
           fr ++ replicate (I# (unsafeCoerce# lr)) 0 ++ f q
 
+padUpTo :: Int -> [Word] -> [Word]
+padUpTo !n [] = replicate n 0
+padUpTo !n (x : xs) = x : padUpTo (n - 1) xs
+
 -- | Return digits of a non-negative number in reverse order.
 digitsUnsigned
   :: Word    -- ^ Precondition that base is ≥2 is not checked
   -> Natural
   -> [Word]
 digitsUnsigned (W# base) (NatS# n) = digitsWord base n
-digitsUnsigned (W# base) (NatJ# n) = case power of
-  1## -> digitsNatural base n
-  _   -> digitsNatural' base power poweredBase n
+digitsUnsigned (W# base) (NatJ# n)
+  | halfSize <- sizeofBigNat# n `iShiftRL#` 1#
+  , isTrue# (halfSize ># 128#)
+  = let pow = I# (word2Int# power *# halfSize) in
+    let (nHi, nLo) = NatJ# n `quotRem` (NatS# poweredBase ^ (I# halfSize)) in
+    padUpTo pow (digitsUnsigned (W# base) nLo) ++ digitsUnsigned (W# base) nHi
+  | otherwise
+  = case power of
+    1## -> digitsNatural base n
+    _   -> digitsNatural' base power poweredBase n
   where
     (# power, poweredBase #) = selectPower base
 
