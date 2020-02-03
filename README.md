@@ -1,70 +1,47 @@
-# fast-digits
+# fast-digits [![Build Status](https://travis-ci.org/Bodigrim/fast-digits.svg)](https://travis-ci.org/Bodigrim/fast-digits) [![Hackage](http://img.shields.io/hackage/v/fast-digits.svg)](https://hackage.haskell.org/package/fast-digits) [![Hackage CI](https://matrix.hackage.haskell.org/api/v2/packages/fast-digits/badge)](https://matrix.hackage.haskell.org/package/fast-digits) [![Stackage LTS](http://stackage.org/package/fast-digits/badge/lts)](http://stackage.org/lts/package/fast-digits) [![Stackage Nightly](http://stackage.org/package/fast-digits/badge/nightly)](http://stackage.org/nightly/package/fast-digits)
 
 The fastest Haskell library to split integers into digits.
-Usually it is at least 2x faster than [Data.Digits](https://hackage.haskell.org/package/digits-0.2)
-and for small bases and huge numbers it may be up to 40 times faster.
+It is both asymptotically (O(n<sup>1.4</sup>) vs. O(n<sup>2</sup>))
+and practically (2x-40x for typical inputs)
+faster than [Data.Digits](https://hackage.haskell.org/package/digits).
 
 Here are some benchmarks:
 
 ```
 > cabal bench
-benchmarking shortInt/FastDigits  base 2
-time                 9.327 ms   (9.186 ms .. 9.503 ms)
-benchmarking shortInt/Data.Digits base 2
-time                 65.39 ms   (55.06 ms .. 77.73 ms)
+shortInt/FastDigits  base 2              mean 6.429 ms  ( +- 465.7 μs  )
+shortInt/Data.Digits base 2              mean 50.08 ms  ( +- 1.848 ms  )
 
-benchmarking shortInt/FastDigits  base 10
-time                 4.974 ms   (4.875 ms .. 5.075 ms)
-benchmarking shortInt/Data.Digits base 10
-time                 16.67 ms   (16.41 ms .. 16.89 ms)
+shortInt/FastDigits  base 10             mean 4.288 ms  ( +- 217.1 μs  )
+shortInt/Data.Digits base 10             mean 15.62 ms  ( +- 540.1 μs  )
 
-benchmarking shortInt/FastDigits  base 10^5
-time                 1.320 ms   (1.308 ms .. 1.335 ms)
-benchmarking shortInt/Data.Digits base 10^5
-time                 4.032 ms   (3.963 ms .. 4.099 ms)
+shortInt/FastDigits  base 10^5           mean 1.142 ms  ( +- 50.09 μs  )
+shortInt/Data.Digits base 10^5           mean 3.962 ms  ( +- 269.1 μs  )
 
-benchmarking shortInt/FastDigits  base 10^9
-time                 1.073 ms   (1.063 ms .. 1.086 ms)
-benchmarking shortInt/Data.Digits base 10^9
-time                 3.250 ms   (3.166 ms .. 3.372 ms)
+shortInt/FastDigits  base 10^9           mean 963.8 μs  ( +- 46.13 μs  )
+shortInt/Data.Digits base 10^9           mean 3.052 ms  ( +- 238.5 μs  )
 
-benchmarking mediumInt/FastDigits  base 2
-time                 1.470 ms   (1.442 ms .. 1.504 ms)
-benchmarking mediumInt/Data.Digits base 2
-time                 11.90 ms   (11.76 ms .. 12.04 ms)
+mediumInt/FastDigits  base 2             mean 1.213 ms  ( +- 185.0 μs  )
+mediumInt/Data.Digits base 2             mean 12.41 ms  ( +- 3.417 ms  )
 
-benchmarking mediumInt/FastDigits  base 10
-time                 806.2 μs   (796.9 μs .. 815.8 μs)
-benchmarking mediumInt/Data.Digits base 10
-time                 3.716 ms   (3.658 ms .. 3.774 ms)
+mediumInt/FastDigits  base 10            mean 689.3 μs  ( +- 32.43 μs  )
+mediumInt/Data.Digits base 10            mean 3.271 ms  ( +- 137.3 μs  )
 
-benchmarking mediumInt/FastDigits  base 10^5
-time                 287.5 μs   (285.6 μs .. 290.0 μs)
-benchmarking mediumInt/Data.Digits base 10^5
-time                 791.8 μs   (782.9 μs .. 804.8 μs)
+mediumInt/FastDigits  base 10^5          mean 220.1 μs  ( +- 11.30 μs  )
+mediumInt/Data.Digits base 10^5          mean 711.1 μs  ( +- 67.31 μs  )
 
-benchmarking mediumInt/FastDigits  base 10^9
-time                 209.3 μs   (207.3 μs .. 211.4 μs)
-benchmarking mediumInt/Data.Digits base 10^9
-time                 458.8 μs   (450.7 μs .. 468.4 μs)
+mediumInt/FastDigits  base 10^9          mean 156.0 μs  ( +- 9.115 μs  )
+mediumInt/Data.Digits base 10^9          mean 407.9 μs  ( +- 19.58 μs  )
 
-benchmarking longInt/FastDigits  base 2
-time                 4.225 ms   (4.165 ms .. 4.292 ms)
-benchmarking longInt/Data.Digits base 2
-time                 190.1 ms   (185.0 ms .. 195.2 ms)
+longInt/FastDigits  base 2               mean 3.515 ms  ( +- 189.7 μs  )
+longInt/Data.Digits base 2               mean 183.2 ms  ( +- 4.564 ms  )
 
-benchmarking longInt/FastDigits  base 10
-time                 3.499 ms   (3.454 ms .. 3.561 ms)
-benchmarking longInt/Data.Digits base 10
-time                 56.45 ms   (56.08 ms .. 57.08 ms)
+longInt/FastDigits  base 10              mean 2.164 ms  ( +- 134.7 μs  )
+longInt/Data.Digits base 10              mean 55.45 ms  ( +- 946.7 μs  )
 
-benchmarking longInt/FastDigits  base 10^5
-time                 3.832 ms   (3.766 ms .. 3.916 ms)
-benchmarking longInt/Data.Digits base 10^5
-time                 11.89 ms   (11.57 ms .. 12.22 ms)
+longInt/FastDigits  base 10^5            mean 1.467 ms  ( +- 60.49 μs  )
+longInt/Data.Digits base 10^5            mean 11.09 ms  ( +- 347.0 μs  )
 
-benchmarking longInt/FastDigits  base 10^9
-time                 3.376 ms   (3.250 ms .. 3.518 ms)
-benchmarking longInt/Data.Digits base 10^9
-time                 6.286 ms   (6.196 ms .. 6.388 ms)
+longInt/FastDigits  base 10^9            mean 1.242 ms  ( +- 52.92 μs  )
+longInt/Data.Digits base 10^9            mean 6.181 ms  ( +- 226.1 μs  )
 ```
