@@ -1,5 +1,5 @@
 name: fast-digits
-version: 0.2.1.0
+version: 0.3.0.0
 license: GPL-3
 license-file: LICENSE
 maintainer: andrew.lelechenko@gmail.com
@@ -14,6 +14,9 @@ description:
 category: Data
 build-type: Simple
 cabal-version: 2.0
+extra-source-files:
+  changelog.md
+  README.md
 tested-with:
   GHC ==7.10.3 GHC ==8.0.2 GHC ==8.2.2 GHC ==8.4.4 GHC ==8.6.5 GHC ==8.8.2
 
