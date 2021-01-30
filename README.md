@@ -1,4 +1,4 @@
-# fast-digits [![Build Status](https://travis-ci.org/Bodigrim/fast-digits.svg)](https://travis-ci.org/Bodigrim/fast-digits) [![Hackage](http://img.shields.io/hackage/v/fast-digits.svg)](https://hackage.haskell.org/package/fast-digits) [![Hackage CI](https://matrix.hackage.haskell.org/api/v2/packages/fast-digits/badge)](https://matrix.hackage.haskell.org/package/fast-digits) [![Stackage LTS](http://stackage.org/package/fast-digits/badge/lts)](http://stackage.org/lts/package/fast-digits) [![Stackage Nightly](http://stackage.org/package/fast-digits/badge/nightly)](http://stackage.org/nightly/package/fast-digits)
+# fast-digits [![Hackage](http://img.shields.io/hackage/v/fast-digits.svg)](https://hackage.haskell.org/package/fast-digits) [![Stackage LTS](http://stackage.org/package/fast-digits/badge/lts)](http://stackage.org/lts/package/fast-digits) [![Stackage Nightly](http://stackage.org/package/fast-digits/badge/nightly)](http://stackage.org/nightly/package/fast-digits)
 
 The fastest Haskell library to split integers into digits.
 It is both asymptotically (O(n<sup>1.4</sup>) vs. O(n<sup>2</sup>))
