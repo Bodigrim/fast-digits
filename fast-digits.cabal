@@ -71,5 +71,8 @@ benchmark bench
   build-depends:
     base,
     digits,
-    fast-digits,
-    gauge
+    fast-digits
+  build-depends:
+    tasty-bench
+  mixins:
+    tasty-bench (Test.Tasty.Bench as Gauge.Main)
