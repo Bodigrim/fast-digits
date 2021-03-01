@@ -58,7 +58,7 @@ test-suite tests
     tasty-smallcheck,
     QuickCheck,
     smallcheck,
-    digits,
+    -- digits,
     fast-digits,
     fast-digits-internal
 
