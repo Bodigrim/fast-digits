@@ -16,16 +16,13 @@ faster than "Data.Digits".
 {-# LANGUAGE MagicHash     #-}
 {-# LANGUAGE UnboxedTuples #-}
 
-{-# OPTIONS_GHC -fno-warn-type-defaults  #-}
-{-# OPTIONS_GHC -O2                      #-}
-{-# OPTIONS_GHC -optc-O3                 #-}
-
 module Data.FastDigits
   ( digits
   , undigits
   , digitsUnsigned
   ) where
 
+import Data.Bits
 import GHC.Exts
 import GHC.Integer.GMP.Internals
 import GHC.Natural
@@ -37,7 +34,7 @@ digitsNatural base = f
   where
     f n
       | isZeroBigNat n = []
-      | otherwise      = let (# q, r #) = n `quotRemBigNatWord` base in
+      | otherwise      = let !(# q, r #) = n `quotRemBigNatWord` base in
                          W# r : f q
 
 digitsWord :: Word# -> Word# -> [Word]
@@ -46,11 +43,21 @@ digitsWord 2## = g
     g :: Word# -> [Word]
     g 0## = []
     g n   = W# (n `and#` 1##) : g (n `uncheckedShiftRL#` 1#)
+digitsWord 10##
+  | finiteBitSize (0 :: Word) == 64
+  = f
+  where
+    f :: Word# -> [Word]
+    f 0## = []
+    f n   = let !(# hi, _ #) = n `timesWord2#` 14757395258967641293## in
+            let q = hi `shiftRL#` 3# in
+            let r = n `minusWord#` (q `timesWord#` 10##) in
+            W# r : f q
 digitsWord base = f
   where
     f :: Word# -> [Word]
     f 0## = []
-    f n   = let (# q, r #) = n `quotRemWord#` base in
+    f n   = let !(# q, r #) = n `quotRemWord#` base in
             W# r : f q
 
 -- | For a given base and expected length of list of digits
@@ -62,15 +69,27 @@ digitsWordL 2## power = g
     g 0## = (# [], power #)
     g n   = (# W# (n `and#` 1##) : fq, lq `minusWord#` 1## #)
       where
-        (# fq, lq #) = g (n `uncheckedShiftRL#` 1#)
+        !(# fq, lq #) = g (n `uncheckedShiftRL#` 1#)
+digitsWordL 10## power
+  | finiteBitSize (0 :: Word) == 64
+  = f
+  where
+    f :: Word# -> (# [Word], Word# #)
+    f 0## = (# [], power #)
+    f n   = (# W# r : fq, lq `minusWord#` 1## #)
+      where
+        !(# hi, _ #) = n `timesWord2#` 14757395258967641293##
+        q = hi `shiftRL#` 3#
+        r = n `minusWord#` (q `timesWord#` 10##)
+        !(# fq, lq #) = f q
 digitsWordL base power = f
   where
     f :: Word# -> (# [Word], Word# #)
     f 0## = (# [], power #)
     f n   = (# W# r : fq, lq `minusWord#` 1## #)
       where
-        (#  q,  r #) = n `quotRemWord#` base
-        (# fq, lq #) = f q
+        !(#  q,  r #) = n `quotRemWord#` base
+        !(# fq, lq #) = f q
 
 -- | For a given base, power and precalculated base^power
 --   take an integer and return the list of its digits.
@@ -78,10 +97,10 @@ digitsNatural' :: Word# -> Word# -> Word# -> BigNat -> [Word]
 digitsNatural' base power poweredBase = f
   where
     f :: BigNat -> [Word]
-    f n = let (# q, r #) = n `quotRemBigNatWord` poweredBase in
+    f n = let !(# q, r #) = n `quotRemBigNatWord` poweredBase in
       if isZeroBigNat q
         then digitsWord base r
-        else let (# fr, lr #) = digitsWordL base power r in
+        else let !(# fr, lr #) = digitsWordL base power r in
           fr ++ replicate (I# (unsafeCoerce# lr)) 0 ++ f q
 
 padUpTo :: Int -> [Word] -> [Word]
@@ -105,7 +124,7 @@ digitsUnsigned (W# base) (NatJ# n)
     1## -> digitsNatural base n
     _   -> digitsNatural' base power poweredBase n
   where
-    (# power, poweredBase #) = selectPower base
+    !(# power, poweredBase #) = selectPower base
 
 -- | Return digits of a non-negative number in reverse order.
 --   Throw an error if number is negative or base is below 2.

@@ -7,33 +7,27 @@ Stability   : experimental
 
 -}
 
-{-# LANGUAGE CPP           #-}
+{-# LANGUAGE BangPatterns  #-}
 {-# LANGUAGE MagicHash     #-}
 {-# LANGUAGE UnboxedTuples #-}
-
-{-# OPTIONS_GHC -fno-warn-type-defaults  #-}
-{-# OPTIONS_GHC -O2                      #-}
-{-# OPTIONS_GHC -optc-O3                 #-}
 
 module Data.FastDigits.Internal
   ( selectPower
   , selectPower'
   ) where
 
+import Data.Bits (finiteBitSize)
 import GHC.Exts
-
-#include "MachDeps.h"
 
 -- | Take an integer base and return (pow, base^pow),
 --   where base^pow <= maxBound and pow is as large as possible.
 selectPower :: Word# -> (# Word#, Word# #)
-#if WORD_SIZE_IN_BITS == 31
-selectPower 2## = (# 31##, 2147483648## #)
-#elif WORD_SIZE_IN_BITS == 32
-selectPower 2## = (# 31##, 2147483648## #)
-#else
-selectPower 2## = (# 63##, 9223372036854775808## #)
-#endif
+selectPower 2##
+  | finiteBitSize (0 :: Word) == 64
+  = (# 63##, 9223372036854775808## #)
+selectPower 10##
+  | finiteBitSize (0 :: Word) == 64
+  = (# 19##, 10000000000000000000## #)
 
 selectPower base = go base
   where
@@ -50,4 +44,4 @@ selectPower base = go base
 selectPower' :: Word -> (Word, Word)
 selectPower' (W# base) = (W# power, W# poweredBase)
   where
-    (# power, poweredBase #) = selectPower base
+    !(# power, poweredBase #) = selectPower base
