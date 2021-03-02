@@ -45,7 +45,7 @@ library fast-digits-internal
     base >=4.8 && <5,
     integer-gmp >=1.0
 
-test-suite tests
+test-suite fast-digits-tests
   type: exitcode-stdio-1.0
   main-is: Tests.hs
   hs-source-dirs: tests
@@ -62,7 +62,7 @@ test-suite tests
     fast-digits,
     fast-digits-internal
 
-benchmark bench
+benchmark fast-digits-bench
   type: exitcode-stdio-1.0
   main-is: Bench.hs
   hs-source-dirs: bench
@@ -70,9 +70,6 @@ benchmark bench
   ghc-options: -O2
   build-depends:
     base,
-    digits,
-    fast-digits
-  build-depends:
+    -- digits,
+    fast-digits,
     tasty-bench
-  mixins:
-    tasty-bench (Test.Tasty.Bench as Gauge.Main)
