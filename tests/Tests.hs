@@ -1,19 +1,19 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ViewPatterns  #-}
 
-module Main where
+module Main (main) where
 
-import Test.SmallCheck.Series as SC
-import Test.Tasty
-import Test.Tasty.SmallCheck as SC
-import Test.Tasty.QuickCheck as QC
+import Test.SmallCheck.Series as SC (Positive(..), NonNegative(..))
+import Test.Tasty (TestTree, testGroup, defaultMain)
+import Test.Tasty.SmallCheck as SC (testProperty)
+import Test.Tasty.QuickCheck as QC (Positive(..), NonNegative(..), Property, (==>), (===), testProperty)
 
 #ifdef MIN_VERSION_digits
-import qualified Data.Digits as D
+import qualified Data.Digits as D (digitsRev, unDigits)
 #endif
 
-import Data.FastDigits
-import Data.FastDigits.Internal
+import Data.FastDigits (digits, undigits)
+import Data.FastDigits.Internal (selectPower')
 
 #ifdef MIN_VERSION_digits
 digitsD :: Int -> Integer -> [Int]

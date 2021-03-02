@@ -22,12 +22,12 @@ module Data.FastDigits
   , digitsUnsigned
   ) where
 
-import Data.Bits
-import GHC.Exts
-import GHC.Integer.GMP.Internals
-import GHC.Natural
-import Unsafe.Coerce
-import Data.FastDigits.Internal
+import Data.Bits (finiteBitSize)
+import GHC.Exts (Word#, Word (W#), uncheckedShiftRL#, and#, timesWord2#, minusWord#, quotRemWord#, timesWord#, unsafeCoerce#, Int (I#), iShiftRL#, isTrue#, word2Int#, (>#), (*#))
+import GHC.Integer.GMP.Internals (GmpLimb#, BigNat, quotRemBigNatWord, isZeroBigNat, sizeofBigNat#)
+import Data.FastDigits.Internal (selectPower)
+import GHC.Natural (Natural(..))
+import Unsafe.Coerce (unsafeCoerce)
 
 digitsNatural :: GmpLimb# -> BigNat -> [Word]
 digitsNatural base = f
@@ -50,7 +50,7 @@ digitsWord 10##
     f :: Word# -> [Word]
     f 0## = []
     f n   = let !(# hi, _ #) = n `timesWord2#` 14757395258967641293## in
-            let q = hi `shiftRL#` 3# in
+            let q = hi `uncheckedShiftRL#` 3# in
             let r = n `minusWord#` (q `timesWord#` 10##) in
             W# r : f q
 digitsWord base = f
@@ -79,7 +79,7 @@ digitsWordL 10## power
     f n   = (# W# r : fq, lq `minusWord#` 1## #)
       where
         !(# hi, _ #) = n `timesWord2#` 14757395258967641293##
-        q = hi `shiftRL#` 3#
+        q = hi `uncheckedShiftRL#` 3#
         r = n `minusWord#` (q `timesWord#` 10##)
         !(# fq, lq #) = f q
 digitsWordL base power = f

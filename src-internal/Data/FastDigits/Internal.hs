@@ -17,7 +17,7 @@ module Data.FastDigits.Internal
   ) where
 
 import Data.Bits (finiteBitSize)
-import GHC.Exts
+import GHC.Exts (Word#, Word(..), timesWord2#, plusWord#, timesWord#)
 
 -- | Take an integer base and return (pow, base^pow),
 --   where base^pow <= maxBound and pow is as large as possible.
