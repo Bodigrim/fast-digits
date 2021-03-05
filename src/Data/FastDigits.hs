@@ -23,11 +23,10 @@ module Data.FastDigits
   ) where
 
 import Data.Bits (finiteBitSize)
-import GHC.Exts (Word#, Word (W#), uncheckedShiftRL#, and#, timesWord2#, minusWord#, quotRemWord#, timesWord#, unsafeCoerce#, Int (I#), iShiftRL#, isTrue#, word2Int#, (>#), (*#))
+import GHC.Exts (Word#, Word(..), uncheckedShiftRL#, and#, timesWord2#, minusWord#, quotRemWord#, timesWord#, Int(..), iShiftRL#, isTrue#, word2Int#, (>#), (*#))
 import GHC.Integer.GMP.Internals (GmpLimb#, BigNat, quotRemBigNatWord, isZeroBigNat, sizeofBigNat#)
 import Data.FastDigits.Internal (selectPower)
 import GHC.Natural (Natural(..))
-import Unsafe.Coerce (unsafeCoerce)
 
 digitsNatural :: GmpLimb# -> BigNat -> [Word]
 digitsNatural base = f
@@ -101,7 +100,7 @@ digitsNatural' base power poweredBase = f
       if isZeroBigNat q
         then digitsWord base r
         else let !(# fr, lr #) = digitsWordL base power r in
-          fr ++ replicate (I# (unsafeCoerce# lr)) 0 ++ f q
+          fr ++ replicate (I# (word2Int# lr)) 0 ++ f q
 
 padUpTo :: Int -> [Word] -> [Word]
 padUpTo !n [] = replicate n 0
@@ -138,8 +137,8 @@ digits
 digits base n
   | base < 2  = error "Base must be > 1"
   | n < 0     = error "Number must be non-negative"
-  | otherwise = unsafeCoerce
-              $ digitsUnsigned (unsafeCoerce base) (unsafeCoerce n)
+  | otherwise = map fromIntegral
+              $ digitsUnsigned (fromIntegral base) (fromInteger n)
 
 -- | Return an integer, built from given digits in reverse order.
 --   Condition 0 ≤ digit < base is not checked.
