@@ -22,9 +22,6 @@ intNs from len = [from, step .. maxBound]
 integerN :: Int -> Int -> Integer
 integerN from len = undigits (maxBound :: Int) (intNs from len)
 
-integerNs :: Int -> Int -> [Integer]
-integerNs llen len = map (\i -> integerN i len) [1..llen]
-
 benchShort :: String -> (Integer -> [Int]) -> Benchmark
 benchShort name f = bench name $ flip nf 10000 $
   \len -> foldl' (+) 0 $ concatMap (f . toInteger)
@@ -56,8 +53,8 @@ benchSmth :: String -> (String -> (Integer -> [Int]) -> Benchmark) -> Benchmark
 benchSmth name b = bgroup name $
   [ benchBase b 2
   , benchBase b 10
-  , benchBase b (10^5)
-  , benchBase b (10^9)
+  , benchBase b 100000
+  , benchBase b 1000000000
   ]
 {-# INLINE benchSmth #-}
 

@@ -30,6 +30,8 @@ library
   hs-source-dirs: src
   default-language: Haskell2010
   ghc-options: -Wall -O2 -fno-warn-deprecations
+  if impl(ghc >= 8.0)
+    ghc-options: -Wcompat
   build-depends:
     base >=4.8 && <5,
     integer-gmp >=1.0,
@@ -41,6 +43,8 @@ library fast-digits-internal
   hs-source-dirs: src-internal
   default-language: Haskell2010
   ghc-options: -Wall -O2
+  if impl(ghc >= 8.0)
+    ghc-options: -Wcompat
   build-depends:
     base >=4.8 && <5
 
@@ -50,6 +54,8 @@ test-suite fast-digits-tests
   hs-source-dirs: tests
   default-language: Haskell2010
   ghc-options: -Wall
+  if impl(ghc >= 8.0)
+    ghc-options: -Wcompat
   build-depends:
     base,
     tasty,
@@ -66,7 +72,9 @@ benchmark fast-digits-bench
   main-is: Bench.hs
   hs-source-dirs: bench
   default-language: Haskell2010
-  ghc-options: -O2
+  ghc-options: -Wall -O2
+  if impl(ghc >= 8.0)
+    ghc-options: -Wcompat
   build-depends:
     base,
     -- digits,
