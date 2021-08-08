@@ -3,7 +3,6 @@ Module      : Data.FastDigits.Internal
 Copyright   : (c) Andrew Lelechenko, 2015-2016
 License     : GPL-3
 Maintainer  : andrew.lelechenko@gmail.com
-Stability   : experimental
 
 -}
 

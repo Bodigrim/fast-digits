@@ -4,7 +4,6 @@ Description : Integer-to-digits conversion.
 Copyright   : (c) Andrew Lelechenko, 2015-2020
 License     : GPL-3
 Maintainer  : andrew.lelechenko@gmail.com
-Stability   : experimental
 
 Convert an integer to digits and back.
 This library is both asymptotically (O(n^1.4) vs. O(n^2))
