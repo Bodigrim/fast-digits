@@ -5,43 +5,72 @@ It is both asymptotically (O(n<sup>1.4</sup>) vs. O(n<sup>2</sup>))
 and practically (2x-40x for typical inputs)
 faster than [Data.Digits](https://hackage.haskell.org/package/digits).
 
-Here are some benchmarks:
+Here are benchmarks for GHC 8.10:
 
 ```
-> cabal bench
-shortInt/FastDigits  base 2              mean 6.429 ms  ( +- 465.7 μs  )
-shortInt/Data.Digits base 2              mean 50.08 ms  ( +- 1.848 ms  )
-
-shortInt/FastDigits  base 10             mean 4.288 ms  ( +- 217.1 μs  )
-shortInt/Data.Digits base 10             mean 15.62 ms  ( +- 540.1 μs  )
-
-shortInt/FastDigits  base 10^5           mean 1.142 ms  ( +- 50.09 μs  )
-shortInt/Data.Digits base 10^5           mean 3.962 ms  ( +- 269.1 μs  )
-
-shortInt/FastDigits  base 10^9           mean 963.8 μs  ( +- 46.13 μs  )
-shortInt/Data.Digits base 10^9           mean 3.052 ms  ( +- 238.5 μs  )
-
-mediumInt/FastDigits  base 2             mean 1.213 ms  ( +- 185.0 μs  )
-mediumInt/Data.Digits base 2             mean 12.41 ms  ( +- 3.417 ms  )
-
-mediumInt/FastDigits  base 10            mean 689.3 μs  ( +- 32.43 μs  )
-mediumInt/Data.Digits base 10            mean 3.271 ms  ( +- 137.3 μs  )
-
-mediumInt/FastDigits  base 10^5          mean 220.1 μs  ( +- 11.30 μs  )
-mediumInt/Data.Digits base 10^5          mean 711.1 μs  ( +- 67.31 μs  )
-
-mediumInt/FastDigits  base 10^9          mean 156.0 μs  ( +- 9.115 μs  )
-mediumInt/Data.Digits base 10^9          mean 407.9 μs  ( +- 19.58 μs  )
-
-longInt/FastDigits  base 2               mean 3.515 ms  ( +- 189.7 μs  )
-longInt/Data.Digits base 2               mean 183.2 ms  ( +- 4.564 ms  )
-
-longInt/FastDigits  base 10              mean 2.164 ms  ( +- 134.7 μs  )
-longInt/Data.Digits base 10              mean 55.45 ms  ( +- 946.7 μs  )
-
-longInt/FastDigits  base 10^5            mean 1.467 ms  ( +- 60.49 μs  )
-longInt/Data.Digits base 10^5            mean 11.09 ms  ( +- 347.0 μs  )
-
-longInt/FastDigits  base 10^9            mean 1.242 ms  ( +- 52.92 μs  )
-longInt/Data.Digits base 10^9            mean 6.181 ms  ( +- 226.1 μs  )
+> cabal bench -w ghc-8.10.4
+All
+  short
+    2
+      FastDigits:  OK (3.11s)
+        12.3 ms ± 701 μs
+      Data.Digits: OK (1.41s)
+        22.2 ms ± 1.8 ms, 1.81x
+    10
+      FastDigits:  OK (2.11s)
+        4.16 ms ± 369 μs
+      Data.Digits: OK (3.74s)
+        7.40 ms ± 235 μs, 1.78x
+    100000
+      FastDigits:  OK (4.89s)
+        1.20 ms ±  69 μs
+      Data.Digits: OK (3.96s)
+        1.95 ms ±  78 μs, 1.63x
+    1000000000
+      FastDigits:  OK (4.02s)
+        985  μs ±  62 μs
+      Data.Digits: OK (3.15s)
+        1.54 ms ±  70 μs, 1.56x
+  medium
+    2
+      FastDigits:  OK (3.02s)
+        1.49 ms ±  66 μs
+      Data.Digits: OK (1.42s)
+        5.62 ms ± 542 μs, 3.77x
+    10
+      FastDigits:  OK (2.35s)
+        571  μs ±  42 μs
+      Data.Digits: OK (1.77s)
+        1.76 ms ± 152 μs, 3.07x
+    100000
+      FastDigits:  OK (3.87s)
+        238  μs ±  19 μs
+      Data.Digits: OK (3.44s)
+        419  μs ±  23 μs, 1.76x
+    1000000000
+      FastDigits:  OK (3.05s)
+        186  μs ±  13 μs
+      Data.Digits: OK (4.42s)
+        268  μs ±  11 μs, 1.44x
+  long
+    2
+      FastDigits:  OK (3.75s)
+        3.60 ms ± 215 μs
+      Data.Digits: OK (1.89s)
+        125  ms ± 9.6 ms, 34.88x
+    10
+      FastDigits:  OK (2.30s)
+        2.24 ms ± 125 μs
+      Data.Digits: OK (2.47s)
+        39.0 ms ± 2.0 ms, 17.40x
+    100000
+      FastDigits:  OK (1.93s)
+        1.88 ms ± 139 μs
+      Data.Digits: OK (4.52s)
+        8.82 ms ± 533 μs, 4.70x
+    1000000000
+      FastDigits:  OK (1.77s)
+        1.71 ms ± 149 μs
+      Data.Digits: OK (1.35s)
+        5.30 ms ± 482 μs, 3.10x
 ```
