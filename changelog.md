@@ -1,3 +1,7 @@
+# 0.3.1.0
+
+* Performance improvement for decimal digits.
+
 # 0.3.0.0
 
 * Hide `Data.FastDigits.Internal`.
