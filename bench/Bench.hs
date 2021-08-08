@@ -7,7 +7,10 @@ import qualified Data.Digits as D (digitsRev)
 #endif
 import Data.FastDigits (digits, undigits)
 import Data.List (foldl')
-import Test.Tasty.Bench (Benchmark, defaultMain, bench, bgroup, nf)
+import Test.Tasty.Bench (Benchmark, Benchmarkable, defaultMain, bench, bgroup, nf)
+#ifdef MIN_VERSION_digits
+import Test.Tasty.Bench (bcompare)
+#endif
 
 #ifdef MIN_VERSION_digits
 digitsD :: Int -> Integer -> [Int]
@@ -22,39 +25,40 @@ intNs from len = [from, step .. maxBound]
 integerN :: Int -> Int -> Integer
 integerN from len = undigits (maxBound :: Int) (intNs from len)
 
-benchShort :: String -> (Integer -> [Int]) -> Benchmark
-benchShort name f = bench name $ flip nf 10000 $
+benchShort :: (Integer -> [Int]) -> Benchmarkable
+benchShort f = flip nf 10000 $
   \len -> foldl' (+) 0 $ concatMap (f . toInteger)
     [1 :: Int, maxBound `quot` len .. maxBound]
 {-# INLINE benchShort #-}
 
-benchMedium :: String -> (Integer -> [Int]) -> Benchmark
-benchMedium name f = bench name $ flip nf 100 $
+benchMedium :: (Integer -> [Int]) -> Benchmarkable
+benchMedium f = flip nf 100 $
   \len -> foldl' (+) 0 $ concatMap (f . flip integerN 10) [1 :: Int .. len]
 {-# INLINE benchMedium #-}
 
-benchLong :: String -> (Integer -> [Int]) -> Benchmark
-benchLong name f = bench name $ flip nf 1000 $
+benchLong :: (Integer -> [Int]) -> Benchmarkable
+benchLong f = flip nf 1000 $
   \len -> foldl' (+) 0 $ f $ integerN 1 len
 {-# INLINE benchLong #-}
 
-benchBase :: (String -> (Integer -> [Int]) -> Benchmark) -> Int -> Benchmark
+benchBase :: ((Integer -> [Int]) -> Benchmarkable) -> String -> Int -> Benchmark
 #ifdef MIN_VERSION_digits
-benchBase b base = bgroup (show base)
-  [ b "FastDigits" (digits base)
-  , b "Digits" (digitsD base)
+benchBase b groupName base = bgroup (show base)
+  [ bench "FastDigits" (b (digits base))
+  , bcompare ("$NF == \"FastDigits\" && $(NF-1) == \"" ++ show base ++ "\" && $(NF-2) == \"" ++ groupName ++ "\"")
+  $ bench "Data.Digits" (b (digitsD base))
   ]
 #else
-benchBase b base = b (show base) (digits base)
+benchBase b _ base = bench (show base) (b (digits base))
 #endif
 {-# INLINE benchBase #-}
 
-benchSmth :: String -> (String -> (Integer -> [Int]) -> Benchmark) -> Benchmark
+benchSmth :: String -> ((Integer -> [Int]) -> Benchmarkable) -> Benchmark
 benchSmth name b = bgroup name $
-  [ benchBase b 2
-  , benchBase b 10
-  , benchBase b 100000
-  , benchBase b 1000000000
+  [ benchBase b name 2
+  , benchBase b name 10
+  , benchBase b name 100000
+  , benchBase b name 1000000000
   ]
 {-# INLINE benchSmth #-}
 
