@@ -7,6 +7,7 @@ Maintainer  : andrew.lelechenko@gmail.com
 -}
 
 {-# LANGUAGE BangPatterns  #-}
+{-# LANGUAGE CPP           #-}
 {-# LANGUAGE MagicHash     #-}
 {-# LANGUAGE UnboxedTuples #-}
 
@@ -32,7 +33,11 @@ selectPower base = go base
   where
     go pw = case timesWord2# pw pw of
         (# 0##, pw2 #)
+#if MIN_VERSION_base(4,10,0)
+          -> let !(# n, pw2n #) = go pw2 in
+#else
           -> let (# n, pw2n #) = go pw2 in
+#endif
             case timesWord2# pw pw2n of
               (# 0##, pw2n1 #) -> (#n `timesWord#` 2## `plusWord#` 1##, pw2n1 #)
               _ -> (# n `timesWord#` 2##, pw2n #)
