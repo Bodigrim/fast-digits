@@ -34,7 +34,7 @@ library
     ghc-options: -Wcompat
   build-depends:
     base >=4.8 && <5,
-    integer-gmp >=1.0,
+    ghc-bignum,
     fast-digits-internal
 
 library fast-digits-internal

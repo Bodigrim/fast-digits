@@ -23,16 +23,16 @@ module Data.FastDigits
 
 import Data.Bits (finiteBitSize)
 import GHC.Exts (Word#, Word(..), uncheckedShiftRL#, and#, timesWord2#, minusWord#, quotRemWord#, timesWord#, Int(..), iShiftRL#, isTrue#, word2Int#, (>#), (*#))
-import GHC.Integer.GMP.Internals (GmpLimb#, BigNat, quotRemBigNatWord, isZeroBigNat, sizeofBigNat#)
 import Data.FastDigits.Internal (selectPower)
 import GHC.Natural (Natural(..))
+import GHC.Num.BigNat (BigNat(..), bigNatIsZero, bigNatQuotRemWord#, bigNatSize#, BigNat#)
 
-digitsNatural :: GmpLimb# -> BigNat -> [Word]
+digitsNatural :: Word# -> BigNat# -> [Word]
 digitsNatural base = f
   where
     f n
-      | isZeroBigNat n = []
-      | otherwise      = let !(# q, r #) = n `quotRemBigNatWord` base in
+      | bigNatIsZero n = []
+      | otherwise      = let !(# q, r #) = n `bigNatQuotRemWord#` base in
                          W# r : f q
 
 digitsWord :: Word# -> Word# -> [Word]
@@ -91,12 +91,12 @@ digitsWordL base power = f
 
 -- | For a given base, power and precalculated base^power
 --   take an integer and return the list of its digits.
-digitsNatural' :: Word# -> Word# -> Word# -> BigNat -> [Word]
+digitsNatural' :: Word# -> Word# -> Word# -> BigNat# -> [Word]
 digitsNatural' base power poweredBase = f
   where
-    f :: BigNat -> [Word]
-    f n = let !(# q, r #) = n `quotRemBigNatWord` poweredBase in
-      if isZeroBigNat q
+    f :: BigNat# -> [Word]
+    f n = let !(# q, r #) = n `bigNatQuotRemWord#` poweredBase in
+      if bigNatIsZero q
         then digitsWord base r
         else let !(# fr, lr #) = digitsWordL base power r in
           fr ++ replicate (I# (word2Int# lr)) 0 ++ f q
@@ -111,16 +111,16 @@ digitsUnsigned
   -> Natural
   -> [Word]
 digitsUnsigned (W# base) (NatS# n) = digitsWord base n
-digitsUnsigned (W# base) (NatJ# n)
-  | halfSize <- sizeofBigNat# n `iShiftRL#` 1#
+digitsUnsigned (W# base) (NatJ# n@(BN# n#))
+  | halfSize <- bigNatSize# n# `iShiftRL#` 1#
   , isTrue# (halfSize ># 128#)
   = let pow = I# (word2Int# power *# halfSize) in
     let (nHi, nLo) = NatJ# n `quotRem` (NatS# poweredBase ^ (I# halfSize)) in
     padUpTo pow (digitsUnsigned (W# base) nLo) ++ digitsUnsigned (W# base) nHi
   | otherwise
   = case power of
-    1## -> digitsNatural base n
-    _   -> digitsNatural' base power poweredBase n
+    1## -> digitsNatural base n#
+    _   -> digitsNatural' base power poweredBase n#
   where
     !(# power, poweredBase #) = selectPower base
 
