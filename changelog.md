@@ -1,3 +1,7 @@
+# 0.3.2.0
+
+* Migrate from `integer-gmp` to `ghc-bignum`.
+
 # 0.3.1.0
 
 * Performance improvement for decimal digits.
