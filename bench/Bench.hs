@@ -2,11 +2,12 @@
 
 module Main (main) where
 
+import Prelude hiding (Foldable(..))
 #ifdef MIN_VERSION_digits
 import qualified Data.Digits as D (digitsRev)
 #endif
 import Data.FastDigits (digits, undigits)
-import Data.List (foldl')
+import Data.Foldable
 import Test.Tasty.Bench (Benchmark, Benchmarkable, defaultMain, bench, bgroup, nf)
 #ifdef MIN_VERSION_digits
 import Test.Tasty.Bench (bcompare)
