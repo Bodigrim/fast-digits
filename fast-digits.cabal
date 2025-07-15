@@ -22,7 +22,7 @@ tested-with:
 
 source-repository head
   type: git
-  location: git://github.com/Bodigrim/fast-digits.git
+  location: https://github.com/Bodigrim/fast-digits
 
 library
   exposed-modules:
