@@ -70,4 +70,4 @@ benchmark fast-digits-bench
     base,
     -- digits,
     fast-digits,
-    tasty-bench >= 0.4 && <0.5
+    tasty-bench >= 0.4 && <0.6
