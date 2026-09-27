@@ -145,9 +145,22 @@ undigits :: (Integral a, Integral b)
          => a       -- ^ The base to use
          -> [b]     -- ^ The list of digits to convert
          -> Integer
-undigits base' = foldr (\d acc -> acc * base + toInteger d) 0
-  where
-    base = toInteger base'
+undigits base xs
+  | length xs < 700 = undigitsSmall (toInteger base) xs
+  | otherwise = undigitsHuge (toInteger base) xs
 {-# SPECIALIZE undigits :: Word    -> [Word]    -> Integer #-}
 {-# SPECIALIZE undigits :: Int     -> [Int]     -> Integer #-}
 {-# SPECIALIZE undigits :: Integer -> [Integer] -> Integer #-}
+
+undigitsSmall :: Integral b => Integer -> [b] -> Integer
+undigitsSmall base = foldr (\d acc -> acc * base + toInteger d) 0
+
+undigitsHuge :: Integral b => Integer -> [b] -> Integer
+undigitsHuge !_ [] = 0
+undigitsHuge base (x : xs) = go (toInteger x) 1 base xs
+  where
+    go acc power poweredBase rest = case splitAt power rest of
+      ([], _) -> acc
+      (p : pref, rest') -> go acc' (power * 2) (poweredBase ^ (2 :: Int)) rest'
+        where
+          acc' = acc + poweredBase * go (toInteger p) 1 base pref
