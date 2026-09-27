@@ -8,6 +8,10 @@ import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.SmallCheck as SC (testProperty)
 import Test.Tasty.QuickCheck as QC (Positive(..), NonNegative(..), Property, (==>), (===), testProperty)
 
+#if MIN_VERSION_base(4,19,0)
+import Data.List (unsnoc)
+#endif
+
 #ifdef MIN_VERSION_digits
 import qualified Data.Digits as D (digitsRev, unDigits)
 #endif
@@ -70,11 +74,15 @@ sProperty4 (SC.Positive base) (SC.NonNegative n) = base == 1 ||
 -- Last digit is not 0
 qProperty5 :: QC.Positive Int -> [QC.Positive Int] -> QC.Property
 qProperty5 (QC.Positive base) (largeInteger -> QC.NonNegative n) = base /= 1 && n /= 0 QC.==>
-  ((/= 0) $ last $ digits base n)
+  case unsnoc (digits base n) of
+    Nothing -> False
+    Just (_, d) -> d /= 0
 
 sProperty5 :: SC.Positive Int -> SC.Positive Integer -> Bool
 sProperty5 (SC.Positive base) (SC.Positive n) = base == 1 ||
-  ((/= 0) $ last $ digits base n)
+  case unsnoc (digits base n) of
+    Nothing -> False
+    Just (_, d) -> d /= 0
 
 #ifdef MIN_VERSION_digits
 -- digits 2 == digitsD 2
@@ -140,3 +148,8 @@ testSuite = testGroup "digits"
 
 main :: IO ()
 main = defaultMain testSuite
+
+#if !MIN_VERSION_base(4,19,0)
+unsnoc :: [a] -> Maybe ([a], a)
+unsnoc = foldr (\x -> Just . maybe ([], x) (\(~(a, b)) -> (x : a, b))) Nothing
+#endif
