@@ -68,4 +68,9 @@ main = defaultMain
   [ benchSmth "short"  benchShort
   , benchSmth "medium" benchMedium
   , benchSmth "long"   benchLong
+
+  , bgroup "undigits"
+  $ map
+    (\n -> bench (show (n :: Int)) $ nf (\m -> undigits m [1..m-1]) n)
+    [10, 100, 1000, 10000, 100000]
   ]
