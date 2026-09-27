@@ -1,3 +1,7 @@
+# 0.3.3.0
+
+* Avoid quadratic complexity in `undigits`.
+
 # 0.3.2.0
 
 * Migrate from `integer-gmp` to `ghc-bignum`.
